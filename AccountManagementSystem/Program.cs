@@ -42,12 +42,6 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     await SeedData.SeedRoles(services);
-    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-    var user = await userManager.FindByEmailAsync("admin@gmail.com");
-    if (user != null)
-    {
-        await userManager.AddToRoleAsync(user, "Admin");
-    }
 }
 
 
