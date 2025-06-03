@@ -2,46 +2,145 @@
 @model ChartOfAccountsModel
 @{
     ViewData["Title"] = "Chart of Accounts";
+    var isEditor = Model.IsEditor;
 }
 
-<h2>Chart of Accounts</h2>
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">Chart of Accounts</h2>
 
-<form method="post" asp-page-handler="Create">
-    <div>
-        <label>Account Name:</label>
-        <input asp-for="Account.Name" />
-    </div>
-    <div>
-        <label>Parent Account:</label>
-        <select asp-for="Account.ParentId">
-            <option value="">-- None --</option>
-            @foreach (var acc in Model.Accounts)
-            {
-                <option value="@acc.Id">@acc.Name</option>
-            }
-        </select>
-    </div>
-    <div>
-        <label>Account Type:</label>
-        <input asp-for="Account.AccountType" />
-    </div>
-    <button type="submit">Create Account</button>
-</form>
-
-<hr />
-
-<h3>Account List</h3>
-<ul>
-    @foreach (var acc in Model.Accounts.Where(a => a.ParentId == null))
+    @if (isEditor)
     {
-        <li>
-            <b>@acc.Name</b> (@acc.AccountType)
-            <ul>
-                @foreach (var child in Model.Accounts.Where(c => c.ParentId == acc.Id))
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Create New Account</h5>
+                <form method="post" asp-page-handler="Create" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Account Name</label>
+                        <input asp-for="Account.Name" class="form-control" />
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Parent Account</label>
+                        <select asp-for="Account.ParentId" class="form-select">
+                            <option value="">-- None --</option>
+                            @foreach (var acc in Model.Accounts)
+                            {
+                                <option value="@acc.Id">@acc.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Account Type</label>
+                        <input asp-for="Account.AccountType" class="form-control" />
+                    </div>
+
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-success">Create Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="mb-4" id="editForm" style="display:none;">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Edit Account</h5>
+                    <form method="post" asp-page-handler="Edit" class="row g-3">
+                        <input type="hidden" name="EditAccount.Id" id="editId" />
+
+                        <div class="col-md-4">
+                            <label class="form-label">Account Name</label>
+                            <input name="EditAccount.Name" id="editName" class="form-control" />
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Parent Account</label>
+                            <select name="EditAccount.ParentId" id="editParentId" class="form-select">
+                                <option value="">-- None --</option>
+                                @foreach (var acc in Model.Accounts)
+                                {
+                                    <option value="@acc.Id">@acc.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">Account Type</label>
+                            <input name="EditAccount.AccountType" id="editType" class="form-control" />
+                        </div>
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" asp-page-handler="Export" class="mb-4">
+            <button type="submit" class="btn btn-outline-primary">Export to Excel</button>
+        </form>
+    }
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Account List</h5>
+            <ul class="list-group">
+                @foreach (var acc in Model.Accounts.Where(a => a.ParentId == null))
                 {
-                    <li>@child.Name (@child.AccountType)</li>
+                    <li class="list-group-item">
+                        <strong>@acc.Name</strong> (@acc.AccountType)
+
+                        @if (Model.IsEditor)
+                        {
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@acc.Id" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger ms-2">Delete</button>
+                            </form>
+
+                            <button type="button" class="btn btn-sm btn-warning ms-2"
+                                    onclick="showEditForm('@acc.Id', '@acc.Name', '@acc.AccountType', '@acc.ParentId')">
+                                Edit
+                            </button>
+                        }
+
+                        <ul class="list-group mt-2 ms-4">
+                            @foreach (var child in Model.Accounts.Where(c => c.ParentId == acc.Id))
+                            {
+                                <li class="list-group-item">
+                                    @child.Name (@child.AccountType)
+
+                                    @if (Model.IsEditor)
+                                    {
+                                        <form method="post" asp-page-handler="Delete" asp-route-id="@child.Id" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-danger ms-2">Delete</button>
+                                        </form>
+
+                                        <button type="button" class="btn btn-sm btn-warning ms-2"
+                                                onclick="showEditForm('@child.Id', '@child.Name', '@child.AccountType', '@child.ParentId')">
+                                            Edit
+                                        </button>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    </li>
                 }
             </ul>
-        </li>
-    }
-</ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showEditForm(id, name, type, parentId) {
+            document.getElementById("editId").value = id;
+            document.getElementById("editName").value = name;
+            document.getElementById("editType").value = type;
+            document.getElementById("editParentId").value = parentId || "";
+
+            document.getElementById("editForm").style.display = "block";
+            document.getElementById("editForm").scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+}

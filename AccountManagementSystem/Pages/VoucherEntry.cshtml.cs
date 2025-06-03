@@ -16,9 +16,15 @@ public class VoucherEntryModel : PageModel
         _config = config;
     }
 
-    public void OnGet()
+    public IActionResult OnGet()
     {
+        if (!User.IsInRole("Admin") && !User.IsInRole("Accountant"))
+        {
+            return Forbid();
+        }
+
         LoadAccounts();
+        return Page();
     }
 
     public void LoadAccounts()
@@ -42,6 +48,10 @@ public class VoucherEntryModel : PageModel
 
     public IActionResult OnPost()
     {
+        if (!User.IsInRole("Admin") && !User.IsInRole("Accountant"))
+        {
+            return Forbid();
+        }
         using (SqlConnection conn = new SqlConnection(_config.GetConnectionString("DefaultConnection")))
         {
             conn.Open();
