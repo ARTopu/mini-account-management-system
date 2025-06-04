@@ -23,10 +23,16 @@ This is a simple account management system built with **ASP.NET Core Razor Pages
 ## 📸 Screenshots
 
 ### Account List (Viewer)
-![Dashboard Screenshot](screenshots/accountList.png)
+![Account List Screenshot](screenshots/accountList.png)
+
+### Access Denied (Viewer)
+![Access Denied Screenshot](screenshots/accessDenied.png)
 
 ### Account CRUD and List , Exported Excel (Admin, Accountent)
-![Excel Screenshot](screenshots/chartOfAccounts.png)
+![Chart of Accounts Screenshot](screenshots/chartOfAccounts.png)
+
+### Voucher Entry (Admin, Accountent)
+![Voucher Entry Screenshot](screenshots/voucherEntry.png)
 
 ### Manage Users Page (Only for Admin)
 ![Manage Page Screenshot](screenshots/manageUsers.png)
@@ -40,8 +46,4 @@ This is a simple account management system built with **ASP.NET Core Razor Pages
 - ADO.NET with stored procedures
 - HTML/CSS for simple UI
 
-## 🔧 Setup Instructions
 
-1. Clone the repo:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/mini-account-management-system.git
