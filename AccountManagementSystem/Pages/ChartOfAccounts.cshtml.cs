@@ -102,35 +102,43 @@ public class ChartOfAccountsModel : PageModel
     {
         if (!User.IsInRole("Admin") && !User.IsInRole("Accountant"))
             return Forbid();
-        string connectionString = _config.GetConnectionString("DefaultConnection");
 
         DataTable dt = new DataTable();
+        string connectionString = _config.GetConnectionString("DefaultConnection");
 
         using (SqlConnection conn = new SqlConnection(connectionString))
         using (SqlCommand cmd = new SqlCommand("sp_ManageChartOfAccounts", conn))
         {
             cmd.CommandType = CommandType.StoredProcedure;
-            cmd.Parameters.AddWithValue("@Action", "GET_ALL"); // Assuming you pass an action param
+            cmd.Parameters.AddWithValue("@Action", "GET_ALL");
 
             SqlDataAdapter da = new SqlDataAdapter(cmd);
             da.Fill(dt);
         }
 
-        using (var package = new ExcelPackage())
+        if (dt.Rows.Count == 0)
         {
-            var worksheet = package.Workbook.Worksheets.Add("ChartOfAccounts");
-            worksheet.Cells["A1"].LoadFromDataTable(dt, true);
-
-            var stream = new MemoryStream();
-            package.SaveAs(stream);
-            stream.Position = 0;
-
-            var fileName = $"ChartOfAccounts_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-            var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-
-            return File(stream, contentType, fileName);
+            TempData["ExportMessage"] = "No data found to export.";
+            return RedirectToPage();
         }
+
+        // Remove using block to prevent auto-disposing
+        var package = new ExcelPackage();
+        var worksheet = package.Workbook.Worksheets.Add("ChartOfAccounts");
+        worksheet.Cells["A1"].LoadFromDataTable(dt, true);
+
+        // Write to memory stream without disposing it
+        var stream = new MemoryStream();
+        package.SaveAs(stream);
+        stream.Position = 0;
+
+        var fileName = $"ChartOfAccounts_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+        return File(stream, contentType, fileName);
     }
+
+
 
 
     public void LoadAccounts()
